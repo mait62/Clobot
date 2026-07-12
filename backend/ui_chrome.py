@@ -100,14 +100,15 @@ body {
 }
 .so-step.is-current .so-step-num { background: var(--so-accent); color: white; }
 .so-grid {
-  display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  grid-template-areas: "controls view";
   gap: 1.1rem; align-items: start; flex: 1;
 }
-@media (max-width: 900px) {
-  .so-grid { grid-template-columns: 1fr; }
-  .so-main { padding: 1rem 0.85rem 2rem; }
-  .so-brand { font-size: 1.15rem; }
-}
+.so-grid-controls { grid-area: controls; min-width: 0; }
+.so-grid-view { grid-area: view; min-width: 0; }
+.so-mobile-only { display: none !important; }
+.so-facing-row { display: none !important; }
 .so-panel {
   background: var(--so-surface); border: 1px solid var(--so-border);
   backdrop-filter: blur(14px); border-radius: var(--so-radius);
@@ -120,6 +121,10 @@ body {
   border: 1px solid var(--so-border); background: #020617;
   min-height: min(58vh, 560px); aspect-ratio: 4 / 3; width: 100%;
 }
+.so-mobile-cam-bar {
+  display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.55rem;
+}
+.so-mobile-cam-bar .q-btn { flex: 1 1 30%; min-height: 2.35rem !important; }
 .so-frame video, .so-frame img, .so-frame .nicegui-interactive-image {
   width: 100% !important; height: 100% !important; object-fit: contain; display: block;
 }
@@ -285,9 +290,7 @@ body {
   from { opacity: 0; transform: scale(0.97) translateY(6px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
-"""
 
-CUSTOM_CSS += """
 .so-nav {
   display: inline-flex; align-items: center;
   padding: 0.4rem 0.85rem; border-radius: var(--so-control);
@@ -300,10 +303,100 @@ CUSTOM_CSS += """
   color: var(--so-accent); background: var(--so-accent-soft);
   border-color: color-mix(in srgb, var(--so-accent) 28%, transparent);
 }
+
+/* Phones: camera first + compact, avoid iOS zoom / sideways scroll */
+@media (max-width: 900px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: clip;
+  }
+  body, #app, .so-shell {
+    max-width: 100%;
+  }
+  .so-header {
+    padding: 0.5rem 0.7rem;
+    gap: 0.4rem;
+  }
+  .so-logo { width: 1.7rem; height: 1.7rem; }
+  .so-brand { font-size: 1.05rem; }
+  .so-nav { padding: 0.3rem 0.55rem; font-size: 0.78rem; }
+  .so-main {
+    padding: 0.65rem 0.65rem 1.5rem;
+    gap: 0.55rem;
+    max-width: 100%;
+  }
+  .so-sub { display: none; }
+  .so-steps { gap: 0.2rem; -webkit-overflow-scrolling: touch; }
+  .so-step {
+    padding: 0.28rem 0.48rem;
+    font-size: 0.72rem;
+    gap: 0.3rem;
+  }
+  .so-step-num {
+    width: 1.15rem; height: 1.15rem; font-size: 0.65rem;
+  }
+  .so-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: "view" "controls";
+    gap: 0.55rem;
+  }
+  .so-grid-view {
+    position: sticky;
+    top: 3.1rem;
+    z-index: 30;
+    padding: 0.55rem !important;
+    box-shadow: 0 10px 28px rgba(8, 145, 178, 0.12);
+    background: var(--so-surface) !important;
+  }
+  .so-grid-view > .so-panel-title { display: none; }
+  .so-frame {
+    min-height: 0;
+    max-height: min(42vh, 320px);
+    aspect-ratio: 4 / 3;
+    border-radius: 0.75rem;
+  }
+  .so-panel {
+    padding: 0.75rem;
+    border-radius: 0.85rem;
+  }
+  .so-panel-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.45rem;
+  }
+  .so-muted { font-size: 0.8rem; }
+  .so-desktop-only { display: none !important; }
+  .so-mobile-only { display: block !important; }
+  .so-mobile-cam-bar.so-mobile-only,
+  .so-facing-row { display: flex !important; }
+  .so-panel .q-field__native,
+  .so-panel .q-field__input,
+  .so-panel input,
+  .so-panel textarea,
+  .so-panel select {
+    font-size: 16px !important; /* stops iOS focus-zoom */
+  }
+  .q-btn {
+    min-height: 2.4rem !important;
+    font-size: 0.84rem !important;
+    padding: 0.25rem 0.7rem !important;
+  }
+  .so-panel .q-uploader__list { min-height: 2.5rem; }
+  .so-panel .gap-3 { gap: 0.55rem !important; }
+  .nicegui-content { width: 100% !important; }
+}
+@media (max-width: 420px) {
+  .so-frame { max-height: min(36vh, 260px); }
+  .so-header .q-btn { padding: 0.15rem 0.4rem !important; }
+}
 """
 
 
 def inject_styles() -> None:
+    ui.add_head_html(
+        '<meta name="viewport" content="width=device-width, initial-scale=1, '
+        'maximum-scale=1, viewport-fit=cover">'
+    )
     ui.add_head_html(f"<style>{CUSTOM_CSS}</style>")
 
 
